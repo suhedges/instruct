@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ category_name }}</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            color: #053856; /* Setting the font color */
+        }
+        h1, h2 {
+            text-align: center;
+            color: #053856; /* Setting the header font color */
+        }
+        .image-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 300px; /* Adjust height as needed */
+        }
+        .image-container img {
+            width: 400px;
+            height: 220px;
+            object-fit: cover;
+            display: none; /* Hide all images initially */
+        }
+        .image-container img.active {
+            display: block; /* Display the active image */
+        }
+        .pdf-category {
+            cursor: pointer;
+            color: #053856; /* Setting the link color */
+        }
+        .btn-primary {
+            background-color: #6E98AD;
+            border-color: #6E98AD;
+        }
+        .text-center {
+            text-align: center;
+        }
+        .video-title {
+            text-align: center;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        .embed-responsive-16by9 {
+            position: relative;
+            display: block;
+            width: 50%; /* Cut the width in half */
+            height: 0;
+            padding-bottom: 28.125%; /* Half of 56.25% (which is the ratio for 16:9) */
+            margin: 0 auto; /* Center the video */
+        }
+        .embed-responsive-16by9 iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="my-4">{{ category_name }}</h1>
+        <div class="image-container">
+            {% for idx, image in enumerate(images) %}
+            <img src="{{ image }}" class="{% if idx == 0 %}active{% endif %}">
+            {% endfor %}
+        </div>
+
+        <div class="mt-4">
+            <h2>Documentation</h2>
+            <div class="d-flex flex-wrap">
+                {% for category, pdf_list in pdfs.items() %}
+                {% if pdf_list|length > 1 %}
+                <div class="p-2">
+                    <a href="#pdfs-{{ loop.index }}" class="pdf-category" data-toggle="collapse" aria-expanded="false" aria-controls="pdfs-{{ loop.index }}">{{ category }}</a>
+                    <div id="pdfs-{{ loop.index }}" class="collapse">
+                        {% for pdf in pdf_list %}
+                        <div class="p-2">
+                            <a href="{{ pdf[0] }}" target="_blank">{{ pdf[1] }}</a>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% else %}
+                <div class="p-2">
+                    <a href="{{ pdf_list[0][0] }}" target="_blank">{{ category }}</a>
+                </div>
+                {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="mt-4">
+            <h2>Videos</h2>
+            <div class="d-flex flex-wrap">
+                {% for video in videos %}
+                <div class="p-2 w-100">
+                    {% if video[0].startswith('https://www.youtube.com/embed/') %}
+                    <div class="embed-responsive embed-responsive-16by9 mb-2">
+                        <iframe class="embed-responsive-item" src="{{ video[0] }}" allowfullscreen></iframe>
+                    </div>
+                    <div class="video-title">{{ video[1] }}</div>
+                    {% else %}
+                    <a href="{{ video[0] }}" target="_blank">
+                        <div class="video-title">{{ video[1] }}</div>
+                    </a>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="text-center mt-4">
+            <a href="{{ url_for('index') }}" class="btn btn-primary">Back to Categories</a>
+        </div>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const images = document.querySelectorAll('.image-container img');
+            let currentIndex = 0;
+
+            function showNextImage() {
+                images[currentIndex].classList.remove('active');
+                currentIndex = (currentIndex + 1) % images.length;
+                images[currentIndex].classList.add('active');
+            }
+
+            setInterval(showNextImage, 5000); // Change image every 5 seconds
+        });
+    </script>
+</body>
+</html>
