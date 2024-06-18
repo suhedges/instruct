@@ -5,12 +5,13 @@ from collections import defaultdict
 import random
 import re
 
+
+app = Flask(__name__)
+
 @app.after_request
 def add_header(response):
     response.headers['X-Frame-Options'] = 'ALLOWALL'
     return response
-
-app = Flask(__name__)
 
 EXCLUDED_FILE_NAMES = ["Warranty Information", "Technical Bulletin", "Line Drawing", "Specification Sheet", "Full Engineering Drawing"]
 HIGHLIGHT_COLORS = {
