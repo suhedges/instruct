@@ -1,121 +1,132 @@
 document.addEventListener('DOMContentLoaded', function() {
-  var accordions = document.querySelectorAll('.accordion details'); // Update the selector
-  var searchInput = document.getElementById('searchInput');
-  var filterInstructions = document.getElementById('filterInstructions');
-  var filterVideos = document.getElementById('filterVideos');
-
-  accordions.forEach(function(accordion) {
-    accordion.addEventListener('toggle', function() {
-      accordions.forEach(function(otherAccordion) {
-        if (otherAccordion !== accordion) {
-          otherAccordion.removeAttribute('open');
-          otherAccordion.querySelector('summary').classList.remove('active');
-        }
-      });
-      accordion.querySelector('summary').classList.toggle('active');
-    });
-  });
-
-  // Attach event listeners to search input and filter checkboxes
-  searchInput.addEventListener('input', applySearchAndFilter);
-  filterInstructions.addEventListener('change', applySearchAndFilter);
-  filterVideos.addEventListener('change', applySearchAndFilter);
+    console.log("DOM fully loaded and parsed");
+    loadParentCategories();
+    applySearchAndFilter();
 });
 
-// Define a global dictionary to store the original visibility state of each category
-var categoryVisibilityState = {};
+// Scrolling functionality
+window.scrollLeft = function(wrapperId) {
+    console.log("scrollLeft function called with ID:", wrapperId); // Debugging line
+    let wrapper = document.getElementById(wrapperId);
+    if (wrapper) {
+        console.log("Scrolling left:", wrapper); // Debugging line
+        wrapper.scrollBy({
+            left: -200,
+            behavior: 'smooth'
+        });
+    } else {
+        console.error("Element not found for scrollLeft with ID:", wrapperId);
+    }
+};
 
+window.scrollRight = function(wrapperId) {
+    console.log("scrollRight function called with ID:", wrapperId); // Debugging line
+    let wrapper = document.getElementById(wrapperId);
+    if (wrapper) {
+        console.log("Scrolling right:", wrapper); // Debugging line
+        wrapper.scrollBy({
+            left: 200,
+            behavior: 'smooth'
+        });
+    } else {
+        console.error("Element not found for scrollRight with ID:", wrapperId);
+    }
+};
+
+// AJAX functions
+function loadParentCategories() {
+    $.get('/parent-categories', function(data) {
+        let parentCategoryButtons = $('#parentCategoryButtons');
+        parentCategoryButtons.empty();
+        console.log("Parent categories data:", data); // Debugging line
+        data.parent_categories.forEach(function(parent) {
+            parentCategoryButtons.append(`<button class="btn btn-primary mx-1" onclick="loadParentCategory('${parent}')">${parent}</button>`);
+        });
+        applySearchAndFilter();
+    });
+}
+
+function loadParentCategory(parentCategory) {
+    $.get(`/videos/${parentCategory}`, function(data) {
+        let childCategoryButtons = $('#childCategoryButtons');
+        childCategoryButtons.empty();
+        console.log("Child categories data:", data); // Debugging line
+        data.child_categories.forEach(function(child) {
+            childCategoryButtons.append(`<button class="btn btn-secondary mx-1" onclick="loadChildCategory('${parentCategory}', '${child}')">${child}</button>`);
+        });
+        updateVideoSection(data.random_videos);
+        $('#pdfSection').empty();
+    });
+}
+
+function loadChildCategory(parentCategory, childCategory) {
+    $.get(`/videos/${parentCategory}/${childCategory}`, function(data) {
+        updateVideoSection(data.videos);
+        updatePdfSection(data.pdfs);
+    });
+}
+
+function updateVideoSection(videos) {
+    let videoSection = $('#videoSection');
+    videoSection.empty();
+    if (!videos || !Array.isArray(videos)) {
+        console.error("Invalid videos data:", videos);
+        return;
+    }
+    videos.forEach(function(video) {
+        videoSection.append(`
+            <div class="col-md-4 mb-4">
+                <div class="embed-responsive embed-responsive-16by9 rounded">
+                    <iframe class="embed-responsive-item" src="${video[0]}" allowfullscreen></iframe>
+                </div>
+                <div class="video-title">${video[1]}</div>
+            </div>
+        `);
+    });
+}
+
+function updatePdfSection(pdfs) {
+    let pdfSection = $('#pdfSection');
+    pdfSection.empty();
+    for (const [category, pdfList] of Object.entries(pdfs)) {
+        pdfSection.append(`<h2>${category}</h2>`);
+        pdfList.forEach(function(pdf) {
+            pdfSection.append(`<a href="${pdf[0]}" target="_blank">${pdf[1]}</a><br>`);
+        });
+    }
+}
+
+// Existing search and filter functions
 function applySearchAndFilter() {
-    var input = document.getElementById('searchInput').value.toUpperCase();
-    var instructionsChecked = document.getElementById('filterInstructions').checked;
-    var videosChecked = document.getElementById('filterVideos').checked;
-    var cards = document.querySelectorAll('.card');
+    const searchInput = document.getElementById('searchInput');
+    searchInput.addEventListener('input', function() {
+        const filter = searchInput.value.toLowerCase();
+        filterCategories(filter);
+    });
+}
 
-    cards.forEach(function(card) {
-        var cardBody = card.querySelector('.card-body');
-        var categories = cardBody.querySelectorAll('.category-link');
+function filterCategories(filter) {
+    const parentCategoryButtons = document.querySelectorAll('#parentCategoryButtons .btn');
+    const childCategoryButtons = document.querySelectorAll('#childCategoryButtons .btn');
+    let parentCategoriesToShow = new Set();
 
-        categories.forEach(function(category) {
-            var categoryName = category.textContent || category.innerText;
-            var highlights = category.getAttribute('data-highlights');
-            var isVisible = true;
-
-            if (categoryVisibilityState.hasOwnProperty(categoryName)) {
-                isVisible = categoryVisibilityState[categoryName];
-            }
-
-            var showCategory = categoryName.toUpperCase().includes(input) &&
-                (instructionsChecked ? ['bright-orange', 'light-green'].includes(highlights) : true) &&
-                (videosChecked ? ['purple', 'light-green'].includes(highlights) : true);
-
-            if (showCategory) {
-                category.style.display = "block"; 
-                category.classList.remove('hidden');
-            } else {
-                category.style.display = "none"; 
-                category.classList.add('hidden');
-            }
-
-            categoryVisibilityState[categoryName] = showCategory;
-        });
-
-        var visibleCategories = cardBody.querySelectorAll('.category-link:not(.hidden)');
-        cardBody.innerHTML = ''; 
-
-        visibleCategories.forEach(function(visibleCategory) {
-            cardBody.appendChild(visibleCategory); 
-        });
-
-        card.style.display = visibleCategories.length > 0 ? "block" : "none";
+    childCategoryButtons.forEach(button => {
+        const childCategory = button.textContent.toLowerCase();
+        const parentCategory = button.getAttribute('onclick').match(/loadChildCategory\('([^']+)'/)[1];
+        if (childCategory.includes(filter)) {
+            button.style.display = '';
+            parentCategoriesToShow.add(parentCategory);
+        } else {
+            button.style.display = 'none';
+        }
     });
 
-    // Restore hidden categories based on the original visibility state
-    var allCategories = document.querySelectorAll('.category-link');
-    allCategories.forEach(function(category) {
-        var categoryName = category.textContent || category.innerText;
-        var cardBody = category.closest('.card-body');
-        
-        if (!categoryVisibilityState[categoryName] && !cardBody.contains(category)) {
-            cardBody.appendChild(category);
+    parentCategoryButtons.forEach(button => {
+        const parentCategory = button.textContent.toLowerCase();
+        if (parentCategory.includes(filter) || parentCategoriesToShow.has(parentCategory)) {
+            button.style.display = '';
+        } else {
+            button.style.display = 'none';
         }
     });
 }
-
-// Listen for changes in search input and filter options
-document.getElementById('searchInput').addEventListener('input', function() {
-    applySearchAndFilter();
-    refreshPage();
-});
-document.getElementById('filterInstructions').addEventListener('change', function() {
-    applySearchAndFilter();
-    refreshPage();
-});
-document.getElementById('filterVideos').addEventListener('change', function() {
-    applySearchAndFilter();
-    refreshPage();
-});
-
-function refreshPage() {
-    // Preserve the current search input value
-    var searchInputValue = document.getElementById('searchInput').value;
-
-    // Refresh the page while maintaining the search input value and filter states
-    location.href = location.pathname + '?search=' + searchInputValue + '&instructions=' + document.getElementById('filterInstructions').checked + '&videos=' + document.getElementById('filterVideos').checked;
-}
-
-// On page load, apply the search and filter based on the URL parameters
-window.onload = function() {
-    var searchParams = new URLSearchParams(window.location.search);
-    var searchInput = searchParams.get('search');
-    var filterInstructions = searchParams.get('instructions') === 'true';
-    var filterVideos = searchParams.get('videos') === 'true';
-
-    if (searchInput) {
-        document.getElementById('searchInput').value = searchInput;
-    }
-
-    document.getElementById('filterInstructions').checked = filterInstructions;
-    document.getElementById('filterVideos').checked = filterVideos;
-
-    applySearchAndFilter();
-};
