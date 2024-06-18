@@ -1,138 +1,87 @@
-body {
-    font-family: Arial, sans-serif;
-    color: #053856; /* Setting the font color */
+/* Styles for category buttons */
+.category-buttons-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
 }
 
-h1, h2 {
-    text-align: center;
-    color: #053856; /* Setting the header font color */
+.category-buttons-wrapper {
+  overflow-x: auto;
+  white-space: nowrap;
+  scrollbar-width: none; /* Hide scrollbar for Firefox */
+  -ms-overflow-style: none; /* Hide scrollbar for IE and Edge */
+  flex: 1;
+  min-width: 100%; /* Set a minimum width to trigger horizontal scrolling */
 }
 
-.accordion {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr); /* 3 columns */
-  grid-gap: 0px; /* No gap between columns */
+.category-buttons-wrapper::-webkit-scrollbar {
+    display: none; /* Hide scrollbar for Chrome, Safari, and Opera */
 }
 
-.accordion .card-wrapper {
-  display: flex;
-  justify-content: center; /* Center the card within the column */
+.category-buttons {
+    display: flex;
+    flex-wrap: nowrap;
 }
 
-.accordion .card {
-  width: 75%; /* Change the card width to 75% */
-  border: none; /* Remove all borders */
+.category-buttons .btn {
+    white-space: nowrap;
+    margin: 0 5px;
 }
 
-.accordion summary {
-    text-align: center;
-    padding: 2px;
-    background-color: transparent; /* Default background */
-    color: #053856; /* Default font color */
+.scroll-button {
+    background-color: transparent;
+    border: none;
+    font-size: 1.5rem;
     cursor: pointer;
-    outline: none;
-    list-style: none; /* Removes the default marker */
-    position: relative; /* For positioning the icon */
-    border: none; /* Remove outline */
-}
-
-.accordion summary:hover {
-    background-color: #F6F6F6; /* Highlight on hover */
-}
-
-.accordion summary::-webkit-details-marker {
-    display: none; /* Hides the default arrow icon in Chrome */
-}
-
-.accordion details[open] summary {
-    background-color: #3A6F8F; /* Background when active */
-    color: white; /* Text color when active */
-    border-bottom: 1px solid #053856; /* Adds a border below the summary when open */
-}
-
-.accordion .btn-link {
-    font-size: 1rem;
-    padding: 0;
-    color: inherit; /* Use inherited color */
-}
-
-.category-link {
-    display: block;
-    padding: 1px 0; /* Reduced padding */
-    text-align: center;
-    color: #053856; /* Setting the category link font color */
-}
-
-.carousel {
-    margin: 0 auto;
-    display: flex;
-    justify-content: center;
-}
-
-.carousel-inner {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 300px; /* Adjust height as needed */
-}
-
-.carousel-item {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.carousel img {
-    width: 220px !important;
-    height: 220px !important;
-    object-fit: cover;
-    margin: 10px;
-}
-
-.file {
-    margin: 10px;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-}
-
-.search-bar {
-    display: flex;
-    justify-content: center;
-    margin-bottom: 20px;
-}
-
-.search-bar input[type="text"] {
-    width: 300px;
-    padding: 10px;
-    font-size: 16px;
-    border: 1px solid #ccc;
-    border-radius: 5px 0 0 5px;
-    outline: none;
-}
-
-.search-bar button:hover {
-    background-color: #5C7F94; /* Darken the search button color on hover */
-}
-
-.filters {
-    display: flex;
-    justify-content: center;
-    margin-bottom: 20px;
-}
-
-.filters label {
     margin: 0 10px;
+    user-select: none;
 }
 
-.d-flex {
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
+.scroll-button img {
+    width: 50px;
+    height: 50px;
 }
 
-.p-2 {
+.arrow-icon {
+    width: 50px;
+    height: 50px;
+}
+
+/* Styles for embedded videos */
+.embed-responsive-16by9 {
+    padding-bottom: 56.25%; /* 16:9 ratio */
+    height: 0;
+    overflow: hidden;
+    position: relative;
+    width: 100%;
+}
+
+.embed-responsive-16by9 iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 12px; /* Rounded corners */
+}
+
+.col-md-4 {
+    padding: 0 10px;
+}
+
+.video-title {
+    text-align: center;
+    margin-top: 5px;
+}
+
+/* Custom Styles */
+.search-bar input {
+    border-radius: 12px;
     padding: 10px;
+    width: 100%;
+    max-width: 500px;
+    border: 1px solid #ccc;
 }
 
 .btn-primary {
@@ -140,48 +89,7 @@ h1, h2 {
     border-color: #6E98AD;
 }
 
-.bright-orange {
-    color: orange !important;
-}
-
-.light-green {
-    color: lightgreen !important;
-}
-
-.purple {
-    color: purple !important;
-}
-
-.catalog-sds {
-    color: #053856 !important;
-}
-
-.pdf-category {
-    cursor: pointer;
-    color: #053856; /* Setting the link color */
-}
-
-.collapse {
-    width: 100%;
-    transition: height 0.35s ease;
-}
-
-.dot {
-    height: 10px;
-    width: 10px;
-    border-radius: 50%;
-    display: inline-block;
-    margin-left: 5px;
-}
-
-.orange-dot {
-    background-color: orange;
-}
-
-.purple-dot {
-    background-color: purple;
-}
-
-.green-dot {
-    background-color: lightgreen;
+.btn-secondary {
+    background-color: #053856;
+    border-color: #053856;
 }
