@@ -1,10 +1,12 @@
 from flask import Flask, render_template, request
+from flask_cors import CORS
 import pandas as pd
 import os
 from collections import defaultdict
 import re
 
 app = Flask(__name__)
+CORS(app)  # Enable CORS for all routes
 
 EXCLUDED_FILE_NAMES = ["Warranty Information", "Technical Bulletin", "Line Drawing", "Specification Sheet", "Full Engineering Drawing"]
 HIGHLIGHT_COLORS = {
