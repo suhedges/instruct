@@ -1,17 +1,13 @@
-from flask import Flask, render_template, jsonify, make_response
+from flask import Flask, render_template, jsonify
 import pandas as pd
 import os
 from collections import defaultdict
 import random
 import re
-
+import numpy as np
+from functools import lru_cache
 
 app = Flask(__name__)
-
-@app.after_request
-def add_header(response):
-    response.headers['X-Frame-Options'] = 'ALLOWALL'
-    return response
 
 EXCLUDED_FILE_NAMES = ["Warranty Information", "Technical Bulletin", "Line Drawing", "Specification Sheet", "Full Engineering Drawing"]
 HIGHLIGHT_COLORS = {
@@ -21,9 +17,10 @@ HIGHLIGHT_COLORS = {
     'catalog_sds': '#053856'
 }
 
+@lru_cache(maxsize=1)
 def load_data():
-    local_csv_path = os.path.join(os.path.dirname(__file__), 'comp.csv.gz')
-    df = pd.read_csv(local_csv_path, compression='gzip', low_memory=False)
+    local_hdf5_path = os.path.join(os.path.dirname(__file__), 'ItemData.h5')
+    df = pd.read_hdf(local_hdf5_path)
     return df
 
 def normalize_youtube_url(url):
@@ -33,7 +30,9 @@ def normalize_youtube_url(url):
         return f'https://www.youtube.com/embed/{video_id}'
     return url
 
-def get_random_videos(df, categories, count=6):
+@lru_cache(maxsize=128)
+def get_random_videos(categories, count=6):
+    df = load_data()
     video_dict = defaultdict(set)
     for category in categories:
         category_data = df[df['CATEGORY_NAME'] == category]
@@ -62,7 +61,7 @@ def index():
     df = load_data()
     df['LEVEL1'] = df['LEVEL1'].fillna('').astype(str)
     parent_categories = sorted(df['LEVEL1'].unique())
-    initial_videos = get_random_videos(df, df['CATEGORY_NAME'].unique())
+    initial_videos = get_random_videos(tuple(df['CATEGORY_NAME'].unique()))
 
     return render_template('index.html', parent_categories=parent_categories, initial_videos=initial_videos)
 
@@ -79,7 +78,7 @@ def get_videos_by_parent_category(parent_category):
     df = load_data()
     df['LEVEL1'] = df['LEVEL1'].fillna('').astype(str)
     child_categories = sorted(df[df['LEVEL1'] == parent_category]['CATEGORY_NAME'].unique())
-    random_videos = get_random_videos(df, child_categories)
+    random_videos = get_random_videos(tuple(child_categories))
 
     return jsonify({
         'child_categories': child_categories,
@@ -120,5 +119,5 @@ def get_videos_by_child_category(parent_category, child_category):
         'pdfs': pdfs
     })
 
-if __name__ == '__main__':
-    app.run(debug=True)
+if __name__ == "__main__":
+    app.run(debug=False, host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
