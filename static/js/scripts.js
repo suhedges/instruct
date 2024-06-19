@@ -6,32 +6,50 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Scrolling functionality
 window.scrollLeft = function(wrapperId) {
-    console.log("scrollLeft function called with ID:", wrapperId); // Debugging line
     let wrapper = document.getElementById(wrapperId);
     if (wrapper) {
-        console.log("Scrolling left:", wrapper); // Debugging line
         wrapper.scrollBy({
             left: -200,
             behavior: 'smooth'
         });
-    } else {
-        console.error("Element not found for scrollLeft with ID:", wrapperId);
+        setTimeout(() => checkScroll(wrapperId), 300); // Check scroll position after animation
     }
 };
 
 window.scrollRight = function(wrapperId) {
-    console.log("scrollRight function called with ID:", wrapperId); // Debugging line
     let wrapper = document.getElementById(wrapperId);
     if (wrapper) {
-        console.log("Scrolling right:", wrapper); // Debugging line
         wrapper.scrollBy({
             left: 200,
             behavior: 'smooth'
         });
-    } else {
-        console.error("Element not found for scrollRight with ID:", wrapperId);
+        setTimeout(() => checkScroll(wrapperId), 300); // Check scroll position after animation
     }
 };
+
+function checkScroll(wrapperId) {
+    let wrapper = document.getElementById(wrapperId);
+    if (wrapper) {
+        let scrollLeft = wrapper.scrollLeft;
+        let scrollWidth = wrapper.scrollWidth;
+        let clientWidth = wrapper.clientWidth;
+
+        let scrollLeftButton = document.getElementById(wrapperId === 'parentCategoryButtonsWrapper' ? 'parentScrollLeft' : 'childScrollLeft');
+        let scrollRightButton = document.getElementById(wrapperId === 'parentCategoryButtonsWrapper' ? 'parentScrollRight' : 'childScrollRight');
+
+        if (scrollLeft <= 0) {
+            scrollLeftButton.style.visibility = 'hidden';
+        } else {
+            scrollLeftButton.style.visibility = 'visible';
+        }
+
+        if (scrollLeft + clientWidth >= scrollWidth) {
+            scrollRightButton.style.visibility = 'hidden';
+        } else {
+            scrollRightButton.style.visibility = 'visible';
+        }
+    }
+}
 
 // AJAX functions
 function loadParentCategories() {
@@ -43,6 +61,7 @@ function loadParentCategories() {
             parentCategoryButtons.append(`<button class="btn btn-primary mx-1" onclick="loadParentCategory('${parent}')">${parent}</button>`);
         });
         applySearchAndFilter();
+        checkScroll('parentCategoryButtonsWrapper');
     });
 }
 
@@ -56,6 +75,9 @@ function loadParentCategory(parentCategory) {
         });
         updateVideoSection(data.random_videos);
         $('#pdfSection').empty();
+        checkScroll('childCategoryButtonsWrapper');
+        $('#childScrollLeft').css('visibility', 'visible');
+        $('#childScrollRight').css('visibility', 'visible');
     });
 }
 
@@ -63,6 +85,7 @@ function loadChildCategory(parentCategory, childCategory) {
     $.get(`/videos/${parentCategory}/${childCategory}`, function(data) {
         updateVideoSection(data.videos);
         updatePdfSection(data.pdfs);
+        checkScroll('childCategoryButtonsWrapper');
     });
 }
 
@@ -88,11 +111,46 @@ function updateVideoSection(videos) {
 function updatePdfSection(pdfs) {
     let pdfSection = $('#pdfSection');
     pdfSection.empty();
+    const categories = {
+        "Catalog": [],
+        "Instruction/Installation Manual": [],
+        "Owners/User Manual": [],
+        "Service Manual": [],
+        "Technical Bulletin": [],
+        "Warranty Information": [],
+        "Specification Sheet": []
+    };
+
+    // Organize PDFs into categories
     for (const [category, pdfList] of Object.entries(pdfs)) {
-        pdfSection.append(`<h2>${category}</h2>`);
-        pdfList.forEach(function(pdf) {
-            pdfSection.append(`<a href="${pdf[0]}" target="_blank">${pdf[1]}</a><br>`);
-        });
+        if (categories[category] !== undefined) {
+            categories[category] = pdfList;
+        }
+    }
+
+    // Create accordion for each category
+    for (const [category, pdfList] of Object.entries(categories)) {
+        if (pdfList.length > 0) {
+            let accordionId = `accordion${category.replace(/\s+/g, '')}`;
+            pdfSection.append(`
+                <div class="accordion" id="${accordionId}">
+                    <div class="card">
+                        <div class="card-header" id="heading${accordionId}">
+                            <h2 class="mb-0">
+                                <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapse${accordionId}" aria-expanded="true" aria-controls="collapse${accordionId}">
+                                    ${category}
+                                </button>
+                            </h2>
+                        </div>
+                        <div id="collapse${accordionId}" class="collapse" aria-labelledby="heading${accordionId}" data-parent="#${accordionId}">
+                            <div class="card-body">
+                                ${pdfList.map(pdf => `<a href="${pdf[0]}" target="_blank">${pdf[1]}</a><br>`).join('')}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `);
+        }
     }
 }
 
@@ -110,6 +168,7 @@ function filterCategories(filter) {
     const childCategoryButtons = document.querySelectorAll('#childCategoryButtons .btn');
     let parentCategoriesToShow = new Set();
 
+    // Filter child categories and collect parent categories that need to be shown
     childCategoryButtons.forEach(button => {
         const childCategory = button.textContent.toLowerCase();
         const parentCategory = button.getAttribute('onclick').match(/loadChildCategory\('([^']+)'/)[1];
@@ -121,12 +180,21 @@ function filterCategories(filter) {
         }
     });
 
+    // Show or hide parent categories based on filter
     parentCategoryButtons.forEach(button => {
         const parentCategory = button.textContent.toLowerCase();
         if (parentCategory.includes(filter) || parentCategoriesToShow.has(parentCategory)) {
             button.style.display = '';
         } else {
             button.style.display = 'none';
+        }
+    });
+
+    // Ensure parent categories of displayed child categories are shown
+    parentCategoriesToShow.forEach(parentCategory => {
+        const parentButton = document.querySelector(`#parentCategoryButtons .btn[onclick="loadParentCategory('${parentCategory}')"]`);
+        if (parentButton) {
+            parentButton.style.display = '';
         }
     });
 }
