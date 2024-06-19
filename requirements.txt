@@ -2,3 +2,4 @@ pandas
 flask
 gunicorn
 flask-cors
+numpy
