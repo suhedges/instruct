@@ -8,14 +8,14 @@
 </head>
 <body>
     <div class="container">
-        <h1 class="my-4 text-center">Categories</h1>
+        <h1 class="my-4 text-center">InfoStream</h1>
         <div class="search-bar text-center">
             <input type="text" id="searchInput" placeholder="Search for categories..." oninput="applySearchAndFilter()">
         </div>
         <div class="filters text-center">
             <!-- Parent Category Buttons -->
             <div class="category-buttons-container">
-                <button class="scroll-button" onclick="window.scrollLeft('parentCategoryButtonsWrapper')">
+                <button id="parentScrollLeft" class="scroll-button" onclick="window.scrollLeft('parentCategoryButtonsWrapper')">
                     <img src="{{ url_for('static', filename='icons/prev.png') }}" alt="Previous" class="arrow-icon">
                 </button>
                 <div id="parentCategoryButtonsWrapper" class="category-buttons-wrapper">
@@ -25,19 +25,19 @@
                         {% endfor %}
                     </div>
                 </div>
-                <button class="scroll-button" onclick="window.scrollRight('parentCategoryButtonsWrapper')">
+                <button id="parentScrollRight" class="scroll-button" onclick="window.scrollRight('parentCategoryButtonsWrapper')">
                     <img src="{{ url_for('static', filename='icons/next.png') }}" alt="Next" class="arrow-icon">
                 </button>
             </div>
             <!-- Child Category Buttons -->
             <div class="category-buttons-container">
-                <button class="scroll-button" onclick="window.scrollLeft('childCategoryButtonsWrapper')">
+                <button id="childScrollLeft" class="scroll-button" onclick="window.scrollLeft('childCategoryButtonsWrapper')" style="visibility: hidden;">
                     <img src="{{ url_for('static', filename='icons/prev.png') }}" alt="Previous" class="arrow-icon">
                 </button>
                 <div id="childCategoryButtonsWrapper" class="category-buttons-wrapper">
                     <div id="childCategoryButtons" class="category-buttons"></div>
                 </div>
-                <button class="scroll-button" onclick="window.scrollRight('childCategoryButtonsWrapper')">
+                <button id="childScrollRight" class="scroll-button" onclick="window.scrollRight('childCategoryButtonsWrapper')" style="visibility: hidden;">
                     <img src="{{ url_for('static', filename='icons/next.png') }}" alt="Next" class="arrow-icon">
                 </button>
             </div>
