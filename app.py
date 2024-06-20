@@ -5,7 +5,6 @@ from collections import defaultdict
 import random
 import re
 from functools import lru_cache
-import urllib.parse
 
 app = Flask(__name__)
 
@@ -36,19 +35,21 @@ def get_random_videos(categories, count=6):
     video_dict = defaultdict(set)
     for category in categories:
         category_data = df[df['CATEGORY_NAME'] == category]
-        file_data = category_data[['File Name1', 'File Category1']].dropna()
-
-        for file_name, file_category in file_data.values:
-            if "Video Link" in file_category and file_name and not file_name.endswith('.pdf'):
-                normalized_url = normalize_youtube_url(file_name)
-                title = "Video"
-                parts = file_category.split("|")
-                if len(parts) > 1:
-                    title = parts[1].strip()
-                else:
-                    title = "YouTube"
-                video_dict[normalized_url].add(title)
-
+        for i in range(1, 7):
+            file_name_col = f'File Name{i}'
+            file_category_col = f'File Category{i}'
+            if file_name_col in category_data.columns and file_category_col in category_data.columns:
+                file_data = category_data[[file_name_col, file_category_col]].dropna()
+                for file_name, file_category in file_data.values:
+                    if "Video Link" in file_category and file_name:
+                        normalized_url = normalize_youtube_url(file_name)
+                        title = "Video"
+                        parts = file_category.split("|")
+                        if len(parts) > 1:
+                            title = parts[1].strip()
+                        else:
+                            title = "YouTube"
+                        video_dict[normalized_url].add(title)
     videos = [(url, titles.pop()) for url, titles in video_dict.items() if url]
     random.shuffle(videos)
     return videos[:count]
@@ -72,7 +73,6 @@ def get_parent_categories():
 
 @app.route('/videos/<parent_category>', methods=['GET'])
 def get_videos_by_parent_category(parent_category):
-    parent_category = urllib.parse.unquote(parent_category)
     df = load_data()
     df['LEVEL1'] = df['LEVEL1'].fillna('').astype(str)
     child_categories = sorted(df[df['LEVEL1'] == parent_category]['CATEGORY_NAME'].unique())
@@ -85,28 +85,29 @@ def get_videos_by_parent_category(parent_category):
 
 @app.route('/videos/<parent_category>/<child_category>', methods=['GET'])
 def get_videos_by_child_category(parent_category, child_category):
-    parent_category = urllib.parse.unquote(parent_category)
-    child_category = urllib.parse.unquote(child_category)
     df = load_data()
     category_data = df[df['CATEGORY_NAME'] == child_category]
     video_dict = defaultdict(set)
     pdfs = defaultdict(set)
 
-    file_data = category_data[['File Name1', 'File Category1']].dropna()
-
-    for file_name, file_category in file_data.values:
-        if file_name.endswith('.pdf'):
-            pdf_name = file_name.split('/')[-1]
-            pdfs[file_category].add((file_name, pdf_name))
-        elif "Video Link" in file_category and file_name and not file_name.endswith('.pdf'):
-            normalized_url = normalize_youtube_url(file_name)
-            title = "Video"
-            parts = file_category.split("|")
-            if len(parts) > 1:
-                title = parts[1].strip()
-            else:
-                title = "YouTube"
-            video_dict[normalized_url].add(title)
+    for i in range(1, 7):
+        file_name_col = f'File Name{i}'
+        file_category_col = f'File Category{i}'
+        if file_name_col in category_data.columns and file_category_col in category_data.columns:
+            file_data = category_data[[file_name_col, file_category_col]].dropna()
+            for file_name, file_category in file_data.values:
+                if file_name.endswith('.pdf'):
+                    pdf_name = file_name.split('/')[-1]
+                    pdfs[file_category].add((file_name, pdf_name))
+                elif "Video Link" in file_category and file_name:
+                    normalized_url = normalize_youtube_url(file_name)
+                    title = "Video"
+                    parts = file_category.split("|")
+                    if len(parts) > 1:
+                        title = parts[1].strip()
+                    else:
+                        title = "YouTube"
+                    video_dict[normalized_url].add(title)
 
     videos = [(url, titles.pop()) for url, titles in video_dict.items() if url]
     pdfs = {key: sorted(value, key=lambda x: x[1]) for key, value in pdfs.items()}
