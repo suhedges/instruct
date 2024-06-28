@@ -94,3 +94,32 @@
     background-color: #053856;
     border-color: #053856;
 }
+
+.pdf-category {
+    margin-bottom: 20px;
+}
+
+.pdf-category h3 {
+    margin-bottom: 10px;
+    font-size: 1.25rem;
+    color: #333;
+}
+
+.pdf-category ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.pdf-category ul li {
+    margin-bottom: 5px;
+}
+
+.pdf-category ul li a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+.pdf-category ul li a:hover {
+    text-decoration: underline;
+}
+
