@@ -1,0 +1,22 @@
+name: Build and Deploy Jekyll Site
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Build Jekyll Site
+      uses: actions/jekyll-build-pages@v1
+      with:
+        source: 'docs'
+        destination: 'docs/_site'
+        future: true
+        verbose: true
