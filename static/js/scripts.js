@@ -128,26 +128,15 @@ function updatePdfSection(pdfs) {
         }
     }
 
-    // Create accordion for each category
+    // Create list for each category
     for (const [category, pdfList] of Object.entries(categories)) {
         if (pdfList.length > 0) {
-            let accordionId = `accordion${category.replace(/\s+/g, '')}`;
             pdfSection.append(`
-                <div class="accordion" id="${accordionId}">
-                    <div class="card">
-                        <div class="card-header" id="heading${accordionId}">
-                            <h2 class="mb-0">
-                                <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapse${accordionId}" aria-expanded="true" aria-controls="collapse${accordionId}">
-                                    ${category}
-                                </button>
-                            </h2>
-                        </div>
-                        <div id="collapse${accordionId}" class="collapse" aria-labelledby="heading${accordionId}" data-parent="#${accordionId}">
-                            <div class="card-body">
-                                ${pdfList.map(pdf => `<a href="${pdf[0]}" target="_blank">${pdf[1]}</a><br>`).join('')}
-                            </div>
-                        </div>
-                    </div>
+                <div class="pdf-category">
+                    <h3>${category}</h3>
+                    <ul>
+                        ${pdfList.map(pdf => `<li><a href="${pdf[0]}" target="_blank">${pdf[1]}</a></li>`).join('')}
+                    </ul>
                 </div>
             `);
         }
