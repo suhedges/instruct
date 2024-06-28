@@ -23,10 +23,20 @@ def load_data():
     return df
 
 def normalize_youtube_url(url):
-    match = re.search(r'(?:v=|\/embed\/|\/watch\?v=|\/watch\?v%3D|\/shorts\/|\/v\/|youtu\.be\/)([\w-]+)', url)
-    if match:
-        video_id = match.group(1)
-        return f'https://www.youtube.com/embed/{video_id}'
+    # List of patterns to match different YouTube URL formats
+    patterns = [
+        r'(?:v=|\/embed\/|\/watch\?v=|\/watch\?v%3D|\/shorts\/|\/v\/|youtu\.be\/)([\w-]+)',  # Comprehensive pattern
+        r'youtube\.com\/shorts\/([\w-]+)',  # YouTube Shorts
+        r'youtube\.com\/watch\?v=([\w-]+)',  # YouTube watch URL
+        r'youtu\.be\/([\w-]+)',  # Shortened URL format
+        r'youtube\.com\/v\/([\w-]+)',  # YouTube v format
+        r'youtube\.com\/embed\/([\w-]+)'  # YouTube embed format
+    ]
+    for pattern in patterns:
+        match = re.search(pattern, url)
+        if match:
+            video_id = match.group(1)
+            return f'https://www.youtube.com/embed/{video_id}'
     return url
 
 @lru_cache(maxsize=128)
@@ -118,4 +128,4 @@ def get_videos_by_child_category(parent_category, child_category):
     })
 
 if __name__ == '__main__':
-    app.run(debug=False, host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
+    app.run(debug=True)
