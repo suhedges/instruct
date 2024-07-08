@@ -64,6 +64,7 @@ def get_random_videos(categories, count=6):
     random.shuffle(videos)
     return videos[:count]
 
+@lru_cache(maxsize=128)
 def get_child_categories_with_videos(parent_category):
     df = load_data()
     child_categories = sorted(df[df['LEVEL1'] == parent_category]['CATEGORY_NAME'].unique())
@@ -104,8 +105,11 @@ def get_parent_categories():
     df = load_data()
     df['LEVEL1'] = df['LEVEL1'].fillna('').astype(str)
     parent_categories = sorted(df['LEVEL1'].unique())
-
-    return jsonify(parent_categories=parent_categories)
+    valid_parent_categories = []
+    for parent in parent_categories:
+        if get_child_categories_with_videos(parent):
+            valid_parent_categories.append(parent)
+    return jsonify(parent_categories=valid_parent_categories)
 
 @app.route('/videos/<parent_category>', methods=['GET'])
 def get_videos_by_parent_category(parent_category):
