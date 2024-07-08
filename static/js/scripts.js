@@ -70,21 +70,25 @@ function loadParentCategory(parentCategory) {
         let childCategoryButtons = $('#childCategoryButtons');
         childCategoryButtons.empty();
         console.log("Child categories data:", data); // Debugging line
-        data.child_categories.forEach(function(child) {
-            childCategoryButtons.append(`<button class="btn btn-secondary mx-1" onclick="loadChildCategory('${parentCategory}', '${child}')">${child}</button>`);
-        });
-        updateVideoSection(data.random_videos);
-        $('#pdfSection').empty();
-        checkScroll('childCategoryButtonsWrapper');
-        $('#childScrollLeft').css('visibility', 'visible');
-        $('#childScrollRight').css('visibility', 'visible');
+        if (data.child_categories.length > 0) {
+            data.child_categories.forEach(function(child) {
+                childCategoryButtons.append(`<button class="btn btn-secondary mx-1" onclick="loadChildCategory('${parentCategory}', '${child}')">${child}</button>`);
+            });
+            updateVideoSection(data.random_videos);
+            checkScroll('childCategoryButtonsWrapper');
+            $('#childScrollLeft').css('visibility', 'visible');
+            $('#childScrollRight').css('visibility', 'visible');
+        } else {
+            // Hide the child category buttons if there are no valid child categories
+            $('#childScrollLeft').css('visibility', 'hidden');
+            $('#childScrollRight').css('visibility', 'hidden');
+        }
     });
 }
 
 function loadChildCategory(parentCategory, childCategory) {
     $.get(`/videos/${parentCategory}/${childCategory}`, function(data) {
         updateVideoSection(data.videos);
-        updatePdfSection(data.pdfs);
         checkScroll('childCategoryButtonsWrapper');
     });
 }
@@ -106,41 +110,6 @@ function updateVideoSection(videos) {
             </div>
         `);
     });
-}
-
-function updatePdfSection(pdfs) {
-    let pdfSection = $('#pdfSection');
-    pdfSection.empty();
-    const categories = {
-        "Catalog": [],
-        "Instruction/Installation Manual": [],
-        "Owners/User Manual": [],
-        "Service Manual": [],
-        "Technical Bulletin": [],
-        "Warranty Information": [],
-        "Specification Sheet": []
-    };
-
-    // Organize PDFs into categories
-    for (const [category, pdfList] of Object.entries(pdfs)) {
-        if (categories[category] !== undefined) {
-            categories[category] = pdfList;
-        }
-    }
-
-    // Create list for each category
-    for (const [category, pdfList] of Object.entries(categories)) {
-        if (pdfList.length > 0) {
-            pdfSection.append(`
-                <div class="pdf-category">
-                    <h3>${category}</h3>
-                    <ul>
-                        ${pdfList.map(pdf => `<li><a href="${pdf[0]}" target="_blank">${pdf[1]}</a></li>`).join('')}
-                    </ul>
-                </div>
-            `);
-        }
-    }
 }
 
 // Existing search and filter functions
