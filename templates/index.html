@@ -3,48 +3,72 @@
 <head>
     <meta charset="UTF-8">
     <title>Categories</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <style>
+        .category-buttons-wrapper {
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+        .category-buttons button {
+            display: inline-block;
+            white-space: normal;
+        }
+        .video-title {
+            text-align: center;
+            margin-top: 0.5rem;
+        }
+        .scroll-button {
+            border: none;
+            background: none;
+            cursor: pointer;
+        }
+        .arrow-icon {
+            width: 24px;
+            height: 24px;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
-        <div class="search-bar text-center">
-            <input type="text" id="searchInput" placeholder="Search for categories..." oninput="applySearchAndFilter()">
+        <div class="search-bar text-center my-3">
+            <input type="text" id="searchInput" class="form-control" placeholder="Search for categories..." oninput="applySearchAndFilter()">
         </div>
-        <div class="filters text-center">
+        <div class="filters text-center my-3">
             <!-- Parent Category Buttons -->
-            <div class="category-buttons-container">
-                <button id="parentScrollLeft" class="scroll-button" onclick="window.scrollLeft('parentCategoryButtonsWrapper')">
+            <div class="category-buttons-container d-flex justify-content-center align-items-center my-2">
+                <button id="parentScrollLeft" class="scroll-button mx-2" onclick="window.scrollLeft('parentCategoryButtonsWrapper')">
                     <img src="{{ url_for('static', filename='icons/prev.png') }}" alt="Previous" class="arrow-icon">
                 </button>
                 <div id="parentCategoryButtonsWrapper" class="category-buttons-wrapper">
                     <div id="parentCategoryButtons" class="category-buttons">
                         {% for parent in parent_categories %}
-                        <button class="btn btn-primary mx-1" onclick="loadParentCategory('{{ parent }}')">{{ parent }}</button>
+                        <button class="btn btn-primary mx-1 my-1" onclick="loadParentCategory('{{ parent }}')">{{ parent }}</button>
                         {% endfor %}
                     </div>
                 </div>
-                <button id="parentScrollRight" class="scroll-button" onclick="window.scrollRight('parentCategoryButtonsWrapper')">
+                <button id="parentScrollRight" class="scroll-button mx-2" onclick="window.scrollRight('parentCategoryButtonsWrapper')">
                     <img src="{{ url_for('static', filename='icons/next.png') }}" alt="Next" class="arrow-icon">
                 </button>
             </div>
             <!-- Child Category Buttons -->
-            <div class="category-buttons-container">
-                <button id="childScrollLeft" class="scroll-button" onclick="window.scrollLeft('childCategoryButtonsWrapper')" style="visibility: hidden;">
+            <div class="category-buttons-container d-flex justify-content-center align-items-center my-2">
+                <button id="childScrollLeft" class="scroll-button mx-2" onclick="window.scrollLeft('childCategoryButtonsWrapper')" style="visibility: hidden;">
                     <img src="{{ url_for('static', filename='icons/prev.png') }}" alt="Previous" class="arrow-icon">
                 </button>
                 <div id="childCategoryButtonsWrapper" class="category-buttons-wrapper">
                     <div id="childCategoryButtons" class="category-buttons"></div>
                 </div>
-                <button id="childScrollRight" class="scroll-button" onclick="window.scrollRight('childCategoryButtonsWrapper')" style="visibility: hidden;">
+                <button id="childScrollRight" class="scroll-button mx-2" onclick="window.scrollRight('childCategoryButtonsWrapper')" style="visibility: hidden;">
                     <img src="{{ url_for('static', filename='icons/next.png') }}" alt="Next" class="arrow-icon">
                 </button>
             </div>
         </div>
         <!-- Video Section -->
-        <div id="videoSection" class="text-center row">
+        <div id="videoSection" class="row text-center">
             {% for video in initial_videos %}
-            <div class="col-md-4 mb-4">
+            <div class="col-12 col-md-6 col-lg-4 mb-4">
                 <div class="embed-responsive embed-responsive-16by9 rounded">
                     <iframe class="embed-responsive-item" src="{{ video[0] }}" allowfullscreen></iframe>
                 </div>
