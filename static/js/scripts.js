@@ -1,55 +1,75 @@
+window.startScroll = function(wrapperId, direction) {
+    let wrapper = document.getElementById(wrapperId);
+    if (wrapper) {
+        // Ensure any existing interval is cleared
+        if (wrapper.scrollInterval) {
+            clearInterval(wrapper.scrollInterval);
+        }
+        wrapper.scrollInterval = setInterval(function() {
+            wrapper.scrollBy({
+                left: direction === 'left' ? -4 : 4,
+                behavior: 'auto' 
+            });
+        }, 10);
+    }
+};
+
+window.stopScroll = function(wrapperId) {
+    let wrapper = document.getElementById(wrapperId);
+    if (wrapper && wrapper.scrollInterval) {
+        clearInterval(wrapper.scrollInterval);
+        wrapper.scrollInterval = null;
+    }
+};
+
+
 document.addEventListener('DOMContentLoaded', function() {
     console.log("DOM fully loaded and parsed");
     loadParentCategories();
     applySearchAndFilter();
 });
 
-// Scrolling functionality
-window.scrollLeft = function(wrapperId) {
-    let wrapper = document.getElementById(wrapperId);
-    if (wrapper) {
-        wrapper.scrollBy({
-            left: -200,
-            behavior: 'smooth'
-        });
-        setTimeout(() => checkScroll(wrapperId), 300); // Check scroll position after animation
-    }
-};
+document.addEventListener('DOMContentLoaded', function() {
+    console.log("DOM fully loaded and parsed");
+    loadParentCategories();
+    applySearchAndFilter();
 
-window.scrollRight = function(wrapperId) {
-    let wrapper = document.getElementById(wrapperId);
-    if (wrapper) {
-        wrapper.scrollBy({
-            left: 200,
-            behavior: 'smooth'
-        });
-        setTimeout(() => checkScroll(wrapperId), 300); // Check scroll position after animation
-    }
-};
+    // For parent category scroll buttons
+    let parentScrollLeftButton = document.getElementById('parentScrollLeft');
+    let parentScrollRightButton = document.getElementById('parentScrollRight');
 
-function checkScroll(wrapperId) {
-    let wrapper = document.getElementById(wrapperId);
-    if (wrapper) {
-        let scrollLeft = wrapper.scrollLeft;
-        let scrollWidth = wrapper.scrollWidth;
-        let clientWidth = wrapper.clientWidth;
+    parentScrollLeftButton.addEventListener('mouseenter', function() {
+        startScroll('parentCategoryButtonsWrapper', 'left');
+    });
+    parentScrollLeftButton.addEventListener('mouseleave', function() {
+        stopScroll('parentCategoryButtonsWrapper');
+    });
 
-        let scrollLeftButton = document.getElementById(wrapperId === 'parentCategoryButtonsWrapper' ? 'parentScrollLeft' : 'childScrollLeft');
-        let scrollRightButton = document.getElementById(wrapperId === 'parentCategoryButtonsWrapper' ? 'parentScrollRight' : 'childScrollRight');
+    parentScrollRightButton.addEventListener('mouseenter', function() {
+        startScroll('parentCategoryButtonsWrapper', 'right');
+    });
+    parentScrollRightButton.addEventListener('mouseleave', function() {
+        stopScroll('parentCategoryButtonsWrapper');
+    });
 
-        if (scrollLeft <= 0) {
-            scrollLeftButton.style.visibility = 'hidden';
-        } else {
-            scrollLeftButton.style.visibility = 'visible';
-        }
+    // For child category scroll buttons
+    let childScrollLeftButton = document.getElementById('childScrollLeft');
+    let childScrollRightButton = document.getElementById('childScrollRight');
 
-        if (scrollLeft + clientWidth >= scrollWidth) {
-            scrollRightButton.style.visibility = 'hidden';
-        } else {
-            scrollRightButton.style.visibility = 'visible';
-        }
-    }
-}
+    childScrollLeftButton.addEventListener('mouseenter', function() {
+        startScroll('childCategoryButtonsWrapper', 'left');
+    });
+    childScrollLeftButton.addEventListener('mouseleave', function() {
+        stopScroll('childCategoryButtonsWrapper');
+    });
+
+    childScrollRightButton.addEventListener('mouseenter', function() {
+        startScroll('childCategoryButtonsWrapper', 'right');
+    });
+    childScrollRightButton.addEventListener('mouseleave', function() {
+        stopScroll('childCategoryButtonsWrapper');
+    });
+});
 
 // AJAX functions
 function loadParentCategories() {
